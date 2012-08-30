@@ -52,8 +52,8 @@
 @interface HPGrowingTextView : UIView <UITextViewDelegate> {
 	HPTextViewInternal *internalTextView;	
 	
-	int minHeight;
-	int maxHeight;
+	CGFloat minHeight;
+	CGFloat maxHeight;
 	
 	//class properties
 	int maxNumberOfLines;
@@ -86,6 +86,8 @@
 
 //uitextview properties
 @property(unsafe_unretained) NSObject<HPGrowingTextViewDelegate> *delegate;
+@property(nonatomic,assign) CGFloat minHeight;
+@property(nonatomic,assign) CGFloat maxHeight;
 @property(nonatomic,strong) NSString *text;
 @property(nonatomic,strong) UIFont *font;
 @property(nonatomic,strong) UIColor *textColor;
