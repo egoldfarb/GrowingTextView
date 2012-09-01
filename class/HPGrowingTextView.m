@@ -601,6 +601,11 @@
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)resetSize{
+    [self performSelector:@selector(textViewDidChange:) withObject:internalTextView];
+}
+
 
 
 @end
