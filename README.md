@@ -1,5 +1,6 @@
-HPGrowingTextView
+HPGrowingTextView (Optimized)
 =================
+Optimized height calculations for faster loading time.
 
 Multi-line/Autoresizing UITextView similar to SMS-app. The example project also even looks like Apple's version.
 
