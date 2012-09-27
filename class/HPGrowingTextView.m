@@ -142,7 +142,6 @@
 
 -(void)setMinNumberOfLines:(int)m
 {
-	// Use internalTextView for height calculations, thanks to Gwynne <http://blog.darkrainfall.org/>
     minHeight = [self heightWithFont:font forNumberOfLines:m];    
     [self sizeToFit];
     minNumberOfLines = m;
