@@ -52,8 +52,8 @@
 @interface HPGrowingTextView : UIView <UITextViewDelegate> {
 	HPTextViewInternal *internalTextView;	
 	
-	int minHeight;
-	int maxHeight;
+	CGFloat minHeight;
+	CGFloat maxHeight;
 	
 	//class properties
 	int maxNumberOfLines;

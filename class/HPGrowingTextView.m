@@ -27,10 +27,11 @@
 
 #import "HPGrowingTextView.h"
 #import "HPTextViewInternal.h"
+#define UITEXTVIEW_DEFAULT_CONTENT_INSETS 8.0f
 
 @interface HPGrowingTextView(private)
 -(void)commonInitialiser;
--(void)resizeTextView:(NSInteger)newSizeH;
+-(void)resizeTextView:(CGFloat)newSizeH;
 -(void)growDidStop;
 @end
 
@@ -63,29 +64,28 @@
     return self;
 }
 
+- (CGFloat)heightWithFont:(UIFont*)someFont forNumberOfLines:(NSInteger)numLines {
+  NSAssert(someFont, @"font should not be nil");
+  return (someFont.lineHeight * numLines) + (2.0f * UITEXTVIEW_DEFAULT_CONTENT_INSETS);
+}
+
 -(void)commonInitialiser
 {
-    // Initialization code
-    CGRect r = self.frame;
-    r.origin.y = 0;
-    r.origin.x = 0;
-    internalTextView = [[HPTextViewInternal alloc] initWithFrame:r];
-    internalTextView.delegate = self;
-    internalTextView.scrollEnabled = NO;
-    internalTextView.font = [UIFont fontWithName:@"Helvetica" size:13]; 
-    internalTextView.contentInset = UIEdgeInsetsZero;		
-    internalTextView.showsHorizontalScrollIndicator = NO;
-    internalTextView.text = @"-";
-    [self addSubview:internalTextView];
+  // Initialization code
+  CGRect r = self.frame;
+  r.origin.y = 0.0f;
+  r.origin.x = 0.0f;
+  internalTextView = [[HPTextViewInternal alloc] initWithFrame:r];
+  internalTextView.delegate = self;
+  internalTextView.scrollEnabled = NO;
+  font = internalTextView.font;
+  internalTextView.contentInset = UIEdgeInsetsZero;		
+  internalTextView.showsHorizontalScrollIndicator = NO;
+  [self addSubview:internalTextView];
     
-    minHeight = internalTextView.frame.size.height;
-    minNumberOfLines = 1;
-    
-    animateHeightChange = YES;
-    
-    internalTextView.text = @"";
-    
-    [self setMaxNumberOfLines:3];
+  [self setMinNumberOfLines:1];
+  [self setMaxNumberOfLines:3];
+  animateHeightChange = YES;
 }
 
 -(CGSize)sizeThatFits:(CGSize)size
@@ -101,7 +101,7 @@
     [super layoutSubviews];
     
 	CGRect r = self.bounds;
-	r.origin.y = 0;
+	r.origin.y = 0.0f;
 	r.origin.x = contentInset.left;
     r.size.width -= contentInset.left + contentInset.right;
     
@@ -130,25 +130,8 @@
 
 -(void)setMaxNumberOfLines:(int)n
 {
-    // Use internalTextView for height calculations, thanks to Gwynne <http://blog.darkrainfall.org/>
-    NSString *saveText = internalTextView.text, *newText = @"-";
-    
-    internalTextView.delegate = nil;
-    internalTextView.hidden = YES;
-    
-    for (int i = 1; i < n; ++i)
-        newText = [newText stringByAppendingString:@"\n|W|"];
-    
-    internalTextView.text = newText;
-    
-    maxHeight = internalTextView.contentSize.height;
-    
-    internalTextView.text = saveText;
-    internalTextView.hidden = NO;
-    internalTextView.delegate = self;
-    
+    maxHeight = [self heightWithFont:font forNumberOfLines:n];
     [self sizeToFit];
-    
     maxNumberOfLines = n;
 }
 
@@ -160,24 +143,8 @@
 -(void)setMinNumberOfLines:(int)m
 {
 	// Use internalTextView for height calculations, thanks to Gwynne <http://blog.darkrainfall.org/>
-    NSString *saveText = internalTextView.text, *newText = @"-";
-    
-    internalTextView.delegate = nil;
-    internalTextView.hidden = YES;
-    
-    for (int i = 1; i < m; ++i)
-        newText = [newText stringByAppendingString:@"\n|W|"];
-    
-    internalTextView.text = newText;
-    
-    minHeight = internalTextView.contentSize.height;
-    
-    internalTextView.text = saveText;
-    internalTextView.hidden = NO;
-    internalTextView.delegate = self;
-    
+    minHeight = [self heightWithFont:font forNumberOfLines:m];    
     [self sizeToFit];
-    
     minNumberOfLines = m;
 }
 
@@ -190,7 +157,7 @@
 - (void)textViewDidChange:(UITextView *)textView
 {	
 	//size of content, so we can set the frame of self
-	NSInteger newSizeH = internalTextView.contentSize.height;
+	CGFloat newSizeH = internalTextView.contentSize.height;
 	if(newSizeH < minHeight || !internalTextView.hasText) newSizeH = minHeight; //not smalles than minHeight
   if (internalTextView.frame.size.height > maxHeight) newSizeH = maxHeight; // not taller than maxHeight
 
@@ -210,8 +177,8 @@
                 
                 if ([UIView resolveClassMethod:@selector(animateWithDuration:animations:)]) {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 40000
-                    [UIView animateWithDuration:0.1f 
-                                          delay:0 
+                    [UIView animateWithDuration:0.1 
+                                          delay:0.0 
                                         options:(UIViewAnimationOptionAllowUserInteraction|
                                                  UIViewAnimationOptionBeginFromCurrentState)                                 
                                      animations:^(void) {
@@ -225,7 +192,7 @@
 #endif
                 } else {
                     [UIView beginAnimations:@"" context:nil];
-                    [UIView setAnimationDuration:0.1f];
+                    [UIView setAnimationDuration:0.1];
                     [UIView setAnimationDelegate:self];
                     [UIView setAnimationDidStopSelector:@selector(growDidStop)];
                     [UIView setAnimationBeginsFromCurrentState:YES];
@@ -267,7 +234,7 @@
 	
 }
 
--(void)resizeTextView:(NSInteger)newSizeH
+-(void)resizeTextView:(CGFloat)newSizeH
 {
     if ([delegate respondsToSelector:@selector(growingTextView:willChangeHeight:)]) {
         [delegate growingTextView:self willChangeHeight:newSizeH];
@@ -338,6 +305,7 @@
 
 -(void)setFont:(UIFont *)afont
 {
+  font = afont;
 	internalTextView.font= afont;
 	
 	[self setMaxNumberOfLines:maxNumberOfLines];
