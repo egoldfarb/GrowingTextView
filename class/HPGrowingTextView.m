@@ -33,7 +33,6 @@
 -(void)commonInitialiser;
 -(void)resizeTextView:(CGFloat)newSizeH;
 -(void)growDidStop;
--(void)sizeToFitMaxHeight;
 @end
 
 @implementation HPGrowingTextView
@@ -49,7 +48,6 @@
 @synthesize animateHeightChange;
 @synthesize animationDuration;
 @synthesize returnKeyType;
-@synthesize minHeight, maxHeight;
 @dynamic placeholder;
 @dynamic placeholderColor;
 
@@ -98,21 +96,24 @@
     internalTextView.displayPlaceHolder = YES;
 }
 
--(void)sizeToFit
+-(CGSize)sizeThatFits:(CGSize)size
 {
-    [self sizeToFitMaxHeight];
+    if (self.text.length == 0) {
+        size.height = minHeight;
+    }
+    return size;
 }
 
--(void)setFrame:(CGRect)aframe
+-(void)layoutSubviews
 {
-	CGRect r = aframe;
-	r.origin.y = 0;
-	r.origin.x = contentInset.left;
+    [super layoutSubviews];
+
+    CGRect r = self.bounds;
+	  r.origin.y = 0;
+	  r.origin.x = contentInset.left;
     r.size.width -= contentInset.left + contentInset.right;
-    
-	internalTextView.frame = r;
-	
-	[super setFrame:aframe];
+
+	  internalTextView.frame = r;
 }
 
 -(void)setContentInset:(UIEdgeInsets)inset
@@ -197,12 +198,6 @@
 {
     return internalTextView.placeholder;
 }
-- (void)setMinHeight:(CGFloat)height
-{
-	minHeight = height;
-    
-	[self sizeToFit];
-}
 
 - (void)setPlaceholder:(NSString *)placeholder
 {
@@ -236,15 +231,8 @@
     }
 }
 
-- (void)setMaxHeight:(CGFloat)height
-{
-	maxHeight = height;
-    
-	[self sizeToFit];
-}
-
-- (void) sizeToFitMaxHeight
-{
+- (void)textViewDidChange:(UITextView *)textView
+{	
 	//size of content, so we can set the frame of self
 	CGFloat newSizeH = internalTextView.contentSize.height;
 	if(newSizeH < minHeight || !internalTextView.hasText) newSizeH = minHeight; //not smalles than minHeight
@@ -267,7 +255,7 @@
                 if ([UIView resolveClassMethod:@selector(animateWithDuration:animations:)]) {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 40000
                     [UIView animateWithDuration:animationDuration 
-                                          delay:0 
+                                          delay:0
                                         options:(UIViewAnimationOptionAllowUserInteraction|
                                                  UIViewAnimationOptionBeginFromCurrentState)                                 
                                      animations:^(void) {
@@ -315,12 +303,6 @@
 			internalTextView.scrollEnabled = NO;
 		}
 	}
-}
-
-
-- (void)textViewDidChange:(UITextView *)textView
-{	
-	[self sizeToFitMaxHeight];
 	
     // Display (or not) the placeholder string
     [self refreshPlaceholder];
