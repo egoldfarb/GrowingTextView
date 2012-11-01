@@ -67,6 +67,7 @@
 	textView.delegate = self;
     textView.internalTextView.scrollIndicatorInsets = UIEdgeInsetsMake(5, 0, 5, 0);
     textView.backgroundColor = [UIColor whiteColor];
+  textView.placeholder = @"Enter message";
     
     // textView.text = @"test\n\ntest";
 	// textView.animateHeightChange = NO; //turns off animation
@@ -173,6 +174,10 @@
     r.size.height -= diff;
     r.origin.y += diff;
 	containerView.frame = r;
+}
+
+- (BOOL)shouldAutorotate {
+  return YES;
 }
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
